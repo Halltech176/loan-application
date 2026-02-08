@@ -1,0 +1,145 @@
+<html>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+        color: white;
+        padding: 40px 20px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 32px;
+      }
+      .header p {
+        margin: 10px 0 0 0;
+        font-size: 18px;
+      }
+      .content {
+        padding: 40px 30px;
+      }
+      .success-box {
+        background-color: #e3f2fd;
+        border: 2px solid #2196f3;
+        border-radius: 8px;
+        padding: 25px;
+        margin: 25px 0;
+        text-align: center;
+      }
+      .success-box h2 {
+        color: #2196f3;
+        margin-top: 0;
+        font-size: 24px;
+      }
+      .success-box .amount {
+        font-size: 36px;
+        font-weight: bold;
+        color: #1976d2;
+        margin: 10px 0;
+      }
+      .button {
+        display: inline-block;
+        padding: 14px 30px;
+        background-color: #2196f3;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 20px 0;
+        font-weight: 600;
+      }
+      .next-steps {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .next-steps ol {
+        margin: 10px 0;
+        padding-left: 20px;
+      }
+      .next-steps li {
+        margin: 10px 0;
+      }
+      .footer {
+        background-color: #f8f9fa;
+        padding: 20px;
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <h1>🎉 Congratulations!</h1>
+        <p>Your Loan Application has been Approved</p>
+      </div>
+
+      <div class='content'>
+        <p>We're thrilled to inform you that your loan application has been approved! This is an
+          exciting step towards achieving your financial goals.</p>
+
+        <div class='success-box'>
+          <h2>✓ Approved Loan Details</h2>
+          <div class='amount'>{{amount}}</div>
+          <p style='font-size: 18px; margin: 15px 0;'>
+            <strong>Loan Term:</strong>
+            {{term}}
+            months<br />
+            <strong>Application ID:</strong>
+            {{applicationId}}
+          </p>
+        </div>
+
+        <div class='next-steps'>
+          <p><strong>📋 Next Steps:</strong></p>
+          <ol>
+            <li><strong>Review Loan Agreement:</strong>
+              Carefully review the complete loan terms and conditions in your dashboard</li>
+            <li><strong>Sign Documents:</strong> Electronically sign the loan agreement</li>
+            <li><strong>Verify Bank Details:</strong>
+              Ensure your bank account information is correct</li>
+            <li><strong>Funds Disbursement:</strong>
+              Funds will be disbursed to your account within 1-3 business days after signing</li>
+          </ol>
+        </div>
+
+        <p style='text-align: center;'>
+          <a href='{{dashboardUrl}}' class='button'>View Loan Details & Sign Agreement</a>
+        </p>
+
+        <p>If you have any questions about your loan or the next steps, please don't hesitate to
+          contact our support team.</p>
+
+        <p>Thank you for trusting Loan Platform with your financial needs!</p>
+
+        <p>Best regards,<br />
+          <strong>The Loan Platform Team</strong></p>
+      </div>
+
+      <div class='footer'>
+        <p>© {{year}} Loan Platform. All rights reserved.</p>
+        <p style='font-size: 12px; color: #999;'>This is an automated message, please do not reply.</p>
+      </div>
+    </div>
+  </body>
+</html>
