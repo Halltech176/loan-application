@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc && npm run copy-templates",
     "copy-templates": "copyfiles -u 1 \"src/**/*.hbs\" dist/",
-    "start": "node dist/server.js",
+    "start": "node -r tsconfig-paths/register dist/server.js",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "test:integration": "jest --testPathPattern=integration",
