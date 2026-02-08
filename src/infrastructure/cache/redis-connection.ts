@@ -19,15 +19,16 @@ export class RedisConnection {
 
   public async connect(): Promise<void> {
     try {
-      this.client = new Redis({
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379'),
-        password: process.env.REDIS_PASSWORD || undefined,
-        retryStrategy: (times) => {
-          const delay = Math.min(times * 50, 2000);
-          return delay;
-        },
-      });
+      if (process.env.REDIS_URL) {
+        this.client = new Redis(process.env.REDIS_URL);
+      } else {
+        this.client = new Redis({
+          host: process.env.REDIS_HOST || 'localhost',
+          port: parseInt(process.env.REDIS_PORT || '6379'),
+          password: process.env.REDIS_PASSWORD || undefined,
+          retryStrategy: (times) => Math.min(times * 50, 2000),
+        });
+      }
 
       this.client.on('connect', () => {
         this.logger.info('Redis connected');
@@ -40,7 +41,6 @@ export class RedisConnection {
       this.client.on('close', () => {
         this.logger.warn('Redis connection closed');
       });
-
     } catch (error) {
       this.logger.error('Failed to connect to Redis', error);
       throw error;
