@@ -117,13 +117,10 @@ const userSchema = new Schema<IUser>(
   },
 );
 
-// Index definitions
-userSchema.index({ email: 1 });
+// userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 
-// Pre-save middleware to hash password
 userSchema.pre('save', async function (next) {
-  // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) {
     return next();
   }
@@ -131,7 +128,6 @@ userSchema.pre('save', async function (next) {
   try {
     const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || '10', 10);
 
-    // Hash the password
     this.password = await bcrypt.hash(this.password, saltRounds);
     next();
   } catch (error) {
@@ -139,11 +135,9 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// Pre-update middleware to hash password on findOneAndUpdate
 userSchema.pre('findOneAndUpdate', async function (next) {
   const update = this.getUpdate() as any;
 
-  // Check if password is being updated
   if (update.password || (update.$set && update.$set.password)) {
     try {
       const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || '10', 10);
@@ -166,7 +160,6 @@ userSchema.pre('findOneAndUpdate', async function (next) {
   }
 });
 
-// Instance method to compare passwords
 userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   try {
     return await bcrypt.compare(candidatePassword, this.password);
