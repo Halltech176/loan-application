@@ -1,0 +1,44 @@
+import mongoose, { Schema, Document , Types} from 'mongoose';
+
+export interface I{{pascalCase name}} extends Document {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  version: number;
+  userId: Schema.Types.ObjectId;
+}
+
+const {{camelCase name}}Schema = new Schema<I{{pascalCase name}}>(
+  {
+    // Define your schema here
+    version: {
+      type: Number,
+      default: 0,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      unique: true,
+      index: true,
+      ref: 'User',
+    },
+  },
+  {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: (_doc, ret) => {
+        const { _id, __v, ...rest } = ret;
+        return {
+          ...rest,
+          id: _id.toString(),
+        };
+      },
+    },
+  }
+);
+
+// Add indexes here
+// {{camelCase name}}Schema.index({ fieldName: 1 });
+
+export const {{pascalCase name}}Model = mongoose.model<I{{pascalCase name}}>('{{pascalCase name}}', {{camelCase name}}Schema);

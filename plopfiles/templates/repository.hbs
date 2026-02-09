@@ -1,0 +1,46 @@
+import { {{pascalCase name}}Model, I{{pascalCase name}} } from './{{dashCase name}}.model';
+import { QueryBuilder, QueryOptions, PaginatedResult } from '../../shared/utils/query-builder';
+
+export class {{pascalCase name}}Repository {
+  public async create(data: Partial<I{{pascalCase name}}>): Promise<I{{pascalCase name}}> {
+    const entity = new {{pascalCase name}}Model(data);
+    return await entity.save();
+  }
+
+  public async findById(id: string): Promise<I{{pascalCase name}} | null> {
+    return await {{pascalCase name}}Model.findById(id);
+  }
+
+  public async findAll(options: QueryOptions): Promise<PaginatedResult<I{{pascalCase name}}>> {
+    const queryBuilder = new QueryBuilder<I{{pascalCase name}}>(options);
+
+    const query = {{pascalCase name}}Model.find(queryBuilder.getFilter())
+      .sort(queryBuilder.getSort())
+      .skip(queryBuilder.getSkip())
+      .limit(queryBuilder.getLimit());
+
+    if (queryBuilder.getSelect()) {
+      query.select(queryBuilder.getSelect());
+    }
+
+    const [data, total] = await Promise.all([
+      query.exec(),
+      {{pascalCase name}}Model.countDocuments(queryBuilder.getFilter()),
+    ]);
+
+    return queryBuilder.buildPaginatedResult(data, total);
+  }
+
+  public async update(id: string, updateData: Partial<I{{pascalCase name}}>): Promise<I{{pascalCase name}} | null> {
+    return await {{pascalCase name}}Model.findByIdAndUpdate(
+      id,
+      { $set: updateData, $inc: { version: 1 } },
+      { new: true, runValidators: true }
+    );
+  }
+
+  public async delete(id: string): Promise<boolean> {
+    const result = await {{pascalCase name}}Model.findByIdAndDelete(id);
+    return result !== null;
+  }
+}

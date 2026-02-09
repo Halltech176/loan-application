@@ -1,0 +1,86 @@
+import { {{pascalCase name}}Repository } from './{{dashCase name}}.repository';
+import { I{{pascalCase name}} } from './{{dashCase name}}.model';
+import { Create{{pascalCase name}}Dto, Update{{pascalCase name}}Dto } from './dto/{{dashCase name}}.dto';
+import { NotFoundError } from '../../shared/errors/app-error';
+import { QueryOptions, PaginatedResult } from '../../shared/utils/query-builder';
+import { EventPublisher } from '../../infrastructure/events/event-publisher';
+
+export class {{pascalCase name}}Service {
+  private repository: {{pascalCase name}}Repository;
+  private eventPublisher: EventPublisher;
+
+  constructor() {
+    this.repository = new {{pascalCase name}}Repository();
+    this.eventPublisher = new EventPublisher();
+  }
+
+  public async create(userId: string, dto: Create{{pascalCase name}}Dto): Promise<I{{pascalCase name}}> {
+    const entity = await this.repository.create(dto);
+
+    await this.eventPublisher.publish({
+      eventType: '{{snakeCase name}}.created',
+      aggregateType: '{{snakeCase name}}',
+      aggregateId: entity.id,
+      payload: dto,
+      userId,
+    });
+
+    return entity;
+  }
+
+  public async getById(id: string): Promise<I{{pascalCase name}}> {
+    const entity = await this.repository.findById(id);
+    
+    if (!entity) {
+      throw new NotFoundError('{{pascalCase name}}');
+    }
+
+    return entity;
+  }
+
+  public async getAll(options: QueryOptions): Promise<PaginatedResult<I{{pascalCase name}}>> {
+    return await this.repository.findAll(options);
+  }
+
+  public async update(id: string, userId: string, dto: Update{{pascalCase name}}Dto): Promise<I{{pascalCase name}}> {
+    const entity = await this.repository.findById(id);
+    
+    if (!entity) {
+      throw new NotFoundError('{{pascalCase name}}');
+    }
+
+    const updated = await this.repository.update(id, dto);
+
+    if (!updated) {
+      throw new NotFoundError('{{pascalCase name}}');
+    }
+
+    await this.eventPublisher.publish({
+      eventType: '{{snakeCase name}}.updated',
+      aggregateType: '{{snakeCase name}}',
+      aggregateId: id,
+      payload: { changes: dto },
+      userId,
+    });
+
+    return updated;
+  }
+
+  public async delete(id: string, userId: string): Promise<void> {
+    const entity = await this.repository.findById(id);
+    
+    if (!entity) {
+      throw new NotFoundError('{{pascalCase name}}');
+    }
+
+    await this.repository.delete(id);
+
+    await this.eventPublisher.publish({
+      eventType: '{{snakeCase name}}.deleted',
+      aggregateType: '{{snakeCase name}}',
+      aggregateId: id,
+      payload: {},
+      userId,
+    });
+  }
+}

@@ -1,0 +1,48 @@
+import { Router } from 'express';
+import { {{pascalCase name}}Controller } from './{{dashCase name}}.controller';
+import { authGuard } from '../../shared/guards/auth.guard';
+import { permissionGuard } from '../../shared/guards/permission.guard';
+import { validateDto } from '../../shared/middleware/validation';
+import { Create{{pascalCase name}}Dto, Update{{pascalCase name}}Dto } from './dto/{{dashCase name}}.dto';
+
+const router = Router();
+const controller = new {{pascalCase name}}Controller();
+
+router.post(
+  '/',
+  authGuard,
+  permissionGuard('{{snakeCase name}}:create'),
+  validateDto(Create{{pascalCase name}}Dto),
+  controller.create
+);
+
+router.get(
+  '/',
+  authGuard,
+  permissionGuard('{{snakeCase name}}:read'),
+  controller.getAll
+);
+
+router.get(
+  '/:id',
+  authGuard,
+  permissionGuard('{{snakeCase name}}:read'),
+  controller.getOne
+);
+
+router.put(
+  '/:id',
+  authGuard,
+  permissionGuard('{{snakeCase name}}:update'),
+  validateDto(Update{{pascalCase name}}Dto),
+  controller.update
+);
+
+router.delete(
+  '/:id',
+  authGuard,
+  permissionGuard('{{snakeCase name}}:delete'),
+  controller.delete
+);
+
+export { router as {{camelCase name}}Router };
