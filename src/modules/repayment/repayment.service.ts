@@ -27,9 +27,9 @@ export class RepaymentService {
 
   public async processPayment(
     userId: Types.ObjectId,
-    loanApplicationId: Types.ObjectId,
     dto: RecordPaymentDto,
   ): Promise<{ repayment: IRepayment; schedule: any }> {
+    const loanApplicationId = new Types.ObjectId(dto.loanApplicationId);
     return await this.distributedLock.executeWithLock(
       `repayment:${loanApplicationId}`,
       async () => {

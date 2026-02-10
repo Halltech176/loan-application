@@ -8,7 +8,6 @@ const logger = Logger.getInstance();
 export const errorHandler = (err: Error, req: Request, res: Response, _: NextFunction): void => {
   const requestId = (req.headers['x-request-id'] as string) || uuidv4();
 
-  // Handle custom ValidationError from app-error (must come before general AppError check)
   if (err instanceof ValidationError) {
     logger.error('Validation Error', {
       requestId,
@@ -27,10 +26,7 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
         message: err.message,
         details: err.details || null,
       },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
+      meta: { requestId, timestamp: new Date().toISOString() },
     });
     return;
   }
@@ -48,20 +44,38 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
 
     res.status(err.statusCode).json({
       success: false,
-      error: {
-        code: err.code,
-        message: err.message,
-        details: err.details || null,
-      },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
+      error: { code: err.code, message: err.message, details: err.details || null },
+      meta: { requestId, timestamp: new Date().toISOString() },
     });
     return;
   }
 
-  if (err instanceof SyntaxError && 'status' in err && err.status === 400 && 'body' in err) {
+  if ((err as any).code === 11000) {
+    const duplicateField = Object.keys((err as any).keyValue)[0];
+    const duplicateValue = (err as any).keyValue[duplicateField];
+
+    logger.error('Mongo Duplicate Key Error', {
+      requestId,
+      error: err.message,
+      path: req.path,
+      method: req.method,
+      duplicateField,
+      duplicateValue,
+    });
+
+    res.status(409).json({
+      success: false,
+      error: {
+        code: 'DUPLICATE_KEY',
+        message: `Duplicate value for field '${duplicateField}': ${duplicateValue}`,
+        details: (err as any).keyValue,
+      },
+      meta: { requestId, timestamp: new Date().toISOString() },
+    });
+    return;
+  }
+
+  if (err.name === 'SyntaxError' && 'status' in err && err.status === 400 && 'body' in err) {
     logger.error('JSON Parse Error', {
       requestId,
       error: err.message,
@@ -76,10 +90,7 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
         message: 'Invalid JSON format in request body',
         details: process.env.NODE_ENV === 'development' ? err.message : null,
       },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
+      meta: { requestId, timestamp: new Date().toISOString() },
     });
     return;
   }
@@ -99,22 +110,16 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
         message: 'Invalid request format',
         details: process.env.NODE_ENV === 'development' ? err.message : null,
       },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
+      meta: { requestId, timestamp: new Date().toISOString() },
     });
     return;
   }
 
-  // Handle Mongoose ValidationError
   if (err.name === 'ValidationError' && (err as any).errors) {
     const mongooseErrors = (err as any).errors;
     const formattedErrors: Record<string, string[]> = {};
-
     Object.keys(mongooseErrors).forEach((key) => {
-      const error = mongooseErrors[key];
-      formattedErrors[key] = [error.message];
+      formattedErrors[key] = [mongooseErrors[key].message];
     });
 
     logger.error('Mongoose Validation Error', {
@@ -126,15 +131,8 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
 
     res.status(400).json({
       success: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: 'Validation failed',
-        details: formattedErrors,
-      },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
+      error: { code: 'VALIDATION_ERROR', message: 'Validation failed', details: formattedErrors },
+      meta: { requestId, timestamp: new Date().toISOString() },
     });
     return;
   }
@@ -154,10 +152,7 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
         message: 'Validation failed',
         details: (err as any).errors || err.message,
       },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
+      meta: { requestId, timestamp: new Date().toISOString() },
     });
     return;
   }
@@ -172,15 +167,8 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
 
     res.status(401).json({
       success: false,
-      error: {
-        code: 'INVALID_TOKEN',
-        message: 'Invalid authentication token',
-        details: null,
-      },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
+      error: { code: 'INVALID_TOKEN', message: 'Invalid authentication token', details: null },
+      meta: { requestId, timestamp: new Date().toISOString() },
     });
     return;
   }
@@ -195,15 +183,8 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
 
     res.status(401).json({
       success: false,
-      error: {
-        code: 'TOKEN_EXPIRED',
-        message: 'Authentication token has expired',
-        details: null,
-      },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
+      error: { code: 'TOKEN_EXPIRED', message: 'Authentication token has expired', details: null },
+      meta: { requestId, timestamp: new Date().toISOString() },
     });
     return;
   }
@@ -221,12 +202,9 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
       error: {
         code: 'DATABASE_ERROR',
         message: 'Database operation failed',
-        details: null,
+        details: process.env.NODE_ENV === 'development' ? err.message : null,
       },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
+      meta: { requestId, timestamp: new Date().toISOString() },
     });
     return;
   }
@@ -241,15 +219,8 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
 
     res.status(400).json({
       success: false,
-      error: {
-        code: 'INVALID_ID',
-        message: 'Invalid ID format',
-        details: null,
-      },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
+      error: { code: 'INVALID_ID', message: 'Invalid ID format', details: null },
+      meta: { requestId, timestamp: new Date().toISOString() },
     });
     return;
   }
@@ -264,15 +235,8 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
 
     res.status(413).json({
       success: false,
-      error: {
-        code: 'PAYLOAD_TOO_LARGE',
-        message: 'Request payload is too large',
-        details: null,
-      },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
+      error: { code: 'PAYLOAD_TOO_LARGE', message: 'Request payload is too large', details: null },
+      meta: { requestId, timestamp: new Date().toISOString() },
     });
     return;
   }
@@ -293,9 +257,6 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
       message: 'An unexpected error occurred',
       details: process.env.NODE_ENV === 'development' ? err.message : null,
     },
-    meta: {
-      requestId,
-      timestamp: new Date().toISOString(),
-    },
+    meta: { requestId, timestamp: new Date().toISOString() },
   });
 };

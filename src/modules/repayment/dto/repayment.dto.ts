@@ -24,6 +24,9 @@ export class CreateRepaymentDto {
 
 export class RecordPaymentDto {
   @IsString()
+  loanApplicationId!: string;
+
+  @IsString()
   paymentMethod!: string;
 
   @IsNumber()

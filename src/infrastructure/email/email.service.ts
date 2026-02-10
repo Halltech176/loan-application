@@ -336,7 +336,7 @@ export class EmailService {
 
     await this.sendMail({
       to: email,
-      subject: '🎊 Congratulations! Loan Fully Repaid',
+      subject: ' Congratulations! Loan Fully Repaid',
       html,
     });
 
@@ -384,7 +384,7 @@ export class EmailService {
 
     await this.sendMail({
       to: email,
-      subject: '⚠️ Overdue Payment Notice',
+      subject: 'Overdue Payment Notice',
       html,
     });
 
@@ -404,7 +404,7 @@ export class EmailService {
 
     await this.sendMail({
       to: email,
-      subject: '🔔 Payment Due Today',
+      subject: ' Payment Due Today',
       html,
     });
 
@@ -440,7 +440,6 @@ export class EmailService {
       return this.templateCache.get(templateName)!;
     }
 
-    // const isDevelopment = process.env.NODE_ENV !== 'production';
     const templatePath = path.join(__dirname, 'templates', `${templateName}.hbs`);
 
     this.logger.debug('Looking for template', { templateName, templatePath });

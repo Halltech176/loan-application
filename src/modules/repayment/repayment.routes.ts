@@ -1,44 +1,43 @@
 import { Router } from 'express';
 import { RepaymentController } from './repayment.controller';
-import { authGuard } from '../../shared/guards/auth.guard';
 import { permissionGuard } from '../../shared/guards/permission.guard';
 import { idempotencyGuard } from '../../shared/guards/idempotency.guard';
 import { validateDto } from '../../shared/middleware/validation';
-import { CreateRepaymentDto, RecordPaymentDto } from './dto/repayment.dto';
+import { RecordPaymentDto } from './dto/repayment.dto';
+import { roleGuard } from '@/shared/guards/role.guard';
+import { UserRole } from '../user/user.model';
 
 const router = Router();
 const controller = new RepaymentController();
 
 router.post(
-  '/',
-  authGuard,
-  permissionGuard('payment:create'),
+  '/process-payment',
+  roleGuard(UserRole.CUSTOMER),
   idempotencyGuard,
-  validateDto(CreateRepaymentDto),
-  controller.create
+  validateDto(RecordPaymentDto),
+  controller.processPayment,
 );
 
 router.get(
   '/:id',
-  authGuard,
+  roleGuard(UserRole.CUSTOMER),
   permissionGuard('payment:read'),
-  controller.getOne
+  controller.getOne,
 );
 
 router.get(
   '/loan/:loanId',
-  authGuard,
+  roleGuard(UserRole.CUSTOMER),
   permissionGuard('payment:read'),
-  controller.getLoanRepayments
+  controller.getLoanRepayments,
 );
 
 router.post(
   '/:id/record-payment',
-  authGuard,
-  permissionGuard('payment:create'),
+  roleGuard(UserRole.CUSTOMER),
   idempotencyGuard,
   validateDto(RecordPaymentDto),
-  controller.recordPayment
+  controller.recordPayment,
 );
 
 export { router as repaymentRouter };

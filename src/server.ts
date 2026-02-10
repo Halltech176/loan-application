@@ -12,6 +12,7 @@ import { EmailService } from './infrastructure/email/email.service';
 import { AuditService } from './infrastructure/audit/audit.service';
 import { initializeLoanWorkflow } from './infrastructure/events/handlers/loan-workflow.handlers';
 import { initializeRepaymentScheduleWorkflow } from './infrastructure/events/handlers/reoayment-workflow.handler';
+import { RepaymentReminderCron } from './cron/repayment.cron';
 
 const logger = Logger.getInstance();
 
@@ -34,6 +35,7 @@ async function bootstrap(): Promise<void> {
 
     await initializeLoanWorkflow();
     await initializeRepaymentScheduleWorkflow();
+    await new RepaymentReminderCron().start();
 
     logger.info('Audit service initialized');
 
