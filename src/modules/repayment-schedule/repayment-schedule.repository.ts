@@ -31,6 +31,13 @@ export class RepaymentScheduleRepository {
     return queryBuilder.buildPaginatedResult(data, total);
   }
 
+  public async findByLoanApplicationIdAndUserId(
+    userId: string,
+    loanApplicationId: string,
+  ): Promise<IRepaymentSchedule | null> {
+    return await RepaymentScheduleModel.findOne({ userId, loanApplicationId });
+  }
+
   public async findByLoanApplicationId(
     loanApplicationId: string,
   ): Promise<IRepaymentSchedule | null> {

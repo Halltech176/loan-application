@@ -422,8 +422,14 @@ export class RepaymentScheduleService {
     return schedule;
   }
 
-  public async getScheduleByLoanId(loanApplicationId: Types.ObjectId): Promise<IRepaymentSchedule> {
-    const schedule = await this.repository.findByLoanApplicationId(String(loanApplicationId));
+  public async getScheduleByLoanId(
+    userId: Types.ObjectId,
+    loanApplicationId: Types.ObjectId,
+  ): Promise<IRepaymentSchedule> {
+    const schedule = await this.repository.findByLoanApplicationIdAndUserId(
+      String(userId),
+      String(loanApplicationId),
+    );
 
     if (!schedule) {
       throw new NotFoundError('Repayment Schedule');

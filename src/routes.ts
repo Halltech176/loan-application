@@ -6,6 +6,7 @@ import { creditApprovalRouter } from './modules/credit-approval/credit-approval.
 import { disbursementRouter } from './modules/disbursement/disbursement.routes';
 import { repaymentRouter } from './modules/repayment/repayment.routes';
 import { customerRouter } from './modules/customer/customer.routes';
+import { repaymentScheduleRouter } from './modules/repayment-schedule/repayment-schedule.routes';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/credit-approvals', creditApprovalRouter);
 router.use('/disbursements', disbursementRouter);
 router.use('/repayments', repaymentRouter);
 router.use('/customer', customerRouter);
+router.use('/repayment-schedule', repaymentScheduleRouter);
 
 export { router };

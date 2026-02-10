@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { RepaymentScheduleService } from './repayment-schedule.service';
 import { Types } from 'mongoose';
+import { AuthenticatedRequest } from '@/shared/guards/auth.guard';
 
 export class RepaymentScheduleController {
   private service: RepaymentScheduleService;
@@ -10,12 +11,13 @@ export class RepaymentScheduleController {
   }
 
   public getScheduleByLoanId = async (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
     try {
       const schedule = await this.service.getScheduleByLoanId(
+        req.user!.id,
         new Types.ObjectId(req.params.loanId),
       );
 
@@ -33,7 +35,7 @@ export class RepaymentScheduleController {
   };
 
   public getUpcomingPayments = async (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction,
   ): Promise<void> => {

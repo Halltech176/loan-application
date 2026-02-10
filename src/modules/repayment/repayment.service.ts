@@ -39,7 +39,10 @@ export class RepaymentService {
           throw new NotFoundError('Loan Application');
         }
 
-        const schedule = await this.repaymentScheduleService.getScheduleByLoanId(loanApplicationId);
+        const schedule = await this.repaymentScheduleService.getScheduleByLoanId(
+          userId,
+          loanApplicationId,
+        );
 
         if (!schedule) {
           throw new NotFoundError('Repayment Schedule');
