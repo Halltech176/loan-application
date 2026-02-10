@@ -22,7 +22,11 @@ export class CustomerService {
       userId: new Types.ObjectId(userId),
     });
 
-    await userService.linkCustomer(userId, entity._id);
+    await userService.linkCustomer(userId, {
+      customerId: entity._id,
+      firstName: dto.personalInformation.firstName,
+      lastName: dto.personalInformation.lastName,
+    });
 
     await this.eventPublisher.publish({
       eventType: 'customer.created',

@@ -9,6 +9,7 @@ import { QueryOptions, PaginatedResult } from '../../shared/utils/query-builder'
 import { DistributedLock } from '../../shared/utils/distributed-lock';
 import { Types } from 'mongoose';
 import { IRepaymentSchedule } from '../repayment-schedule/repayment-schedule.model';
+import { LoanStatus } from '../loan-application/loan-application.model';
 
 export class RepaymentService {
   private repository: RepaymentRepository;
@@ -39,6 +40,13 @@ export class RepaymentService {
           throw new NotFoundError('Loan Application');
         }
 
+        if (loan.status !== LoanStatus.DISBURSED) {
+          throw new UnprocessableEntityError(
+            'Payments can only be processed for disbursed loans',
+            'LOAN_NOT_DISBURSED',
+          );
+        }
+
         const schedule = await this.repaymentScheduleService.getScheduleByLoanId(
           userId,
           loanApplicationId,
@@ -67,7 +75,6 @@ export class RepaymentService {
           dueDate: nextInstallment.dueDate,
           paidDate: new Date(),
           status: PaymentStatus.COMPLETED,
-          paymentMethod: dto.paymentMethod,
           transactionReference: dto.transactionReference,
           paidBy: String(userId),
           notes: dto.notes,
@@ -87,7 +94,6 @@ export class RepaymentService {
           payload: {
             loanApplicationId: String(loanApplicationId),
             amount: dto.amount,
-            paymentMethod: dto.paymentMethod,
             transactionReference: dto.transactionReference,
           },
           userId: String(userId),
@@ -198,7 +204,6 @@ export class RepaymentService {
         status: PaymentStatus.COMPLETED,
         paidDate: new Date(),
         paidBy: userId,
-        paymentMethod: dto.paymentMethod,
         transactionReference: dto.transactionReference,
         notes: dto.notes,
       });
@@ -214,7 +219,6 @@ export class RepaymentService {
         payload: {
           loanApplicationId: updated.loanApplicationId,
           amount: updated.amount,
-          paymentMethod: dto.paymentMethod,
         },
         userId,
       });

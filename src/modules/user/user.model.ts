@@ -18,6 +18,8 @@ export interface IUser extends Document {
   customerId?: Types.ObjectId;
   email: string;
   phoneNumber: string;
+  firstName: string;
+  lastName: string;
   password: string;
   role: string;
   permissions: string[];
@@ -69,6 +71,13 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       minlength: 6,
+    },
+
+    firstName: {
+      type: String,
+    },
+    lastName: {
+      type: String,
     },
 
     role: {

@@ -15,6 +15,7 @@ import { EventPublisher } from '../../infrastructure/events/event-publisher';
 import { DistributedLock } from '../../shared/utils/distributed-lock';
 import { Types } from 'mongoose';
 import { CustomerRepository } from '../customer/customer.repository';
+import { userService } from '../user/user.service';
 
 export class LoanApplicationService {
   private repository: LoanApplicationRepository;
@@ -30,7 +31,7 @@ export class LoanApplicationService {
   }
 
   private getRandomCreditScore(): number {
-    return Math.floor(Math.random() * (850 - 300 + 1)) + 600;
+    return Math.floor(Math.random() * (850 - 500 + 1)) + 500;
   }
 
   private getMockDebtToIncomeRatio(): number {
@@ -60,6 +61,20 @@ export class LoanApplicationService {
       throw new UnprocessableEntityError(
         'Customer must be verified to apply for a loan',
         'CUSTOMER_NOT_VERIFIED',
+      );
+    }
+
+    const loanApplication = await this.repository.findByApplicantId(applicantId, {
+      limit: 1,
+      filters: {
+        status: { $in: [LoanStatus.DRAFT, LoanStatus.SUBMITTED, LoanStatus.UNDER_REVIEW] },
+      },
+    });
+
+    if (loanApplication.data.length > 0) {
+      throw new ConflictError(
+        'You already have an active loan application. Please wait for it to be processed before applying again.',
+        'ACTIVE_APPLICATION_EXISTS',
       );
     }
 
@@ -178,6 +193,8 @@ export class LoanApplicationService {
         throw new NotFoundError('Loan Application');
       }
 
+      const user = await userService.getUserById(String(userId));
+
       await this.eventPublisher.publish({
         eventType: 'loan_application.submitted',
         aggregateType: 'loan_application',
@@ -186,6 +203,9 @@ export class LoanApplicationService {
           amount: updated.amount,
           term: updated.term,
           applicantId: updated.applicantId,
+          email: user.email,
+          firstName: user?.firstName,
+          lastName: user?.lastName,
         },
         userId: String(userId),
       });

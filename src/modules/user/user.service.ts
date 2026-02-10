@@ -7,6 +7,11 @@ import bcrypt from 'bcryptjs';
 import { EventPublisher } from '../../infrastructure/events/event-publisher';
 import { Types } from 'mongoose';
 
+export type CustomerProfileToUser = {
+  customerId: Types.ObjectId;
+  firstName: string;
+  lastName: string;
+};
 export class UserService {
   private repository: UserRepository;
   private eventPublisher: EventPublisher;
@@ -85,14 +90,17 @@ export class UserService {
     return updatedUser;
   }
 
-  public async linkCustomer(userId: string, customerId: Types.ObjectId): Promise<IUser> {
+  public async linkCustomer(
+    userId: string,
+    { customerId, firstName, lastName }: CustomerProfileToUser,
+  ): Promise<IUser> {
     const user = await this.repository.findById(userId);
 
     if (!user) {
       throw new NotFoundError('User');
     }
 
-    const updatedUser = await this.repository.update(userId, { customerId });
+    const updatedUser = await this.repository.update(userId, { customerId, firstName, lastName });
 
     if (!updatedUser) {
       throw new NotFoundError('User');

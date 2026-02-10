@@ -26,9 +26,6 @@ export class RecordPaymentDto {
   @IsString()
   loanApplicationId!: string;
 
-  @IsString()
-  paymentMethod!: string;
-
   @IsNumber()
   @Min(0)
   amount!: number;

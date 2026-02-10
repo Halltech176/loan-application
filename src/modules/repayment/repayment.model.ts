@@ -7,6 +7,10 @@ export enum PaymentStatus {
   REFUNDED = 'refunded',
 }
 
+export enum PaymentMethod {
+  BANK_TRANSFER = 'bank_transfer',
+}
+
 export interface IRepayment extends Document {
   id: string;
   loanApplicationId: string;
@@ -16,7 +20,7 @@ export interface IRepayment extends Document {
   dueDate: Date;
   paidDate?: Date;
   status: PaymentStatus;
-  paymentMethod?: string;
+  paymentMethod?: PaymentMethod;
   transactionReference?: string;
   paidBy?: string;
   notes?: string;
@@ -57,7 +61,11 @@ const repaymentSchema = new Schema<IRepayment>(
       enum: Object.values(PaymentStatus),
       default: PaymentStatus.PENDING,
     },
-    paymentMethod: String,
+    paymentMethod: {
+      type: String,
+      enum: Object.values(PaymentMethod),
+      default: PaymentMethod.BANK_TRANSFER,
+    },
     transactionReference: String,
     paidBy: String,
     notes: String,
