@@ -14,9 +14,11 @@ import { QueryOptions, PaginatedResult } from '../../shared/utils/query-builder'
 import { EventPublisher } from '../../infrastructure/events/event-publisher';
 import { DistributedLock } from '../../shared/utils/distributed-lock';
 import { Types } from 'mongoose';
+import { CustomerRepository } from '../customer/customer.repository';
 
 export class LoanApplicationService {
   private repository: LoanApplicationRepository;
+  private customerRepository: CustomerRepository;
   private eventPublisher: EventPublisher;
   private distributedLock: DistributedLock;
 
@@ -24,10 +26,15 @@ export class LoanApplicationService {
     this.repository = new LoanApplicationRepository();
     this.eventPublisher = new EventPublisher();
     this.distributedLock = new DistributedLock();
+    this.customerRepository = new CustomerRepository();
   }
 
   private getRandomCreditScore(): number {
-    return Math.floor(Math.random() * (850 - 300 + 1)) + 300;
+    return Math.floor(Math.random() * (850 - 300 + 1)) + 600;
+  }
+
+  private getMockDebtToIncomeRatio(): number {
+    return Math.floor(Math.random() * (60 - 5 + 1)) + 5;
   }
 
   private calculateInterestRate(creditScore: number): number {
@@ -48,6 +55,14 @@ export class LoanApplicationService {
     applicantId: Types.ObjectId,
     dto: CreateLoanApplicationDto,
   ): Promise<ILoanApplication> {
+    const customer = await this.customerRepository.findCustomerByUserId(String(applicantId));
+    if (!customer?.isVerified) {
+      throw new UnprocessableEntityError(
+        'Customer must be verified to apply for a loan',
+        'CUSTOMER_NOT_VERIFIED',
+      );
+    }
+
     const creditScore = this.getRandomCreditScore();
     const interestRate = this.calculateInterestRate(creditScore);
 
@@ -57,6 +72,7 @@ export class LoanApplicationService {
       status: LoanStatus.DRAFT,
       interestRate,
       creditScore: creditScore,
+      debtToIncomeRatio: this.getMockDebtToIncomeRatio(),
       statusHistory: [
         {
           status: LoanStatus.DRAFT,

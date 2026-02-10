@@ -1,5 +1,6 @@
 import { CustomerModel, ICustomer } from './customer.model';
 import { QueryBuilder, QueryOptions, PaginatedResult } from '../../shared/utils/query-builder';
+import { DeepPartial } from '@/types';
 
 export class CustomerRepository {
   public async create(data: Partial<ICustomer>): Promise<ICustomer> {
@@ -9,6 +10,10 @@ export class CustomerRepository {
 
   public async findById(id: string): Promise<ICustomer | null> {
     return await CustomerModel.findById(id);
+  }
+
+  public async findCustomerByUserId(userId: string): Promise<ICustomer | null> {
+    return await CustomerModel.findOne({ userId: userId });
   }
 
   public async findAll(options: QueryOptions): Promise<PaginatedResult<ICustomer>> {
@@ -31,11 +36,11 @@ export class CustomerRepository {
     return queryBuilder.buildPaginatedResult(data, total);
   }
 
-  public async update(id: string, updateData: Partial<ICustomer>): Promise<ICustomer | null> {
+  public async update(id: string, updateData: DeepPartial<ICustomer>): Promise<ICustomer | null> {
     return await CustomerModel.findByIdAndUpdate(
       id,
       { $set: updateData, $inc: { version: 1 } },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
   }
 

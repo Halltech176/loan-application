@@ -14,8 +14,7 @@ interface AuthResponse {
   user: {
     id: string;
     email: string;
-    firstName: string;
-    lastName: string;
+    phoneNumber?: string;
     role: string;
     permissions: string[];
   };
@@ -45,8 +44,7 @@ export class AuthService {
     const user = await this.repository.create({
       email: dto.email.toLowerCase(),
       password: dto.password,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
+      phoneNumber: dto.phoneNumber,
       role: 'applicant',
       permissions: this.getPermissionsForRole('applicant'),
     });
@@ -70,8 +68,7 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
         role: user.role,
         permissions: user.permissions,
       },
@@ -134,8 +131,8 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+
         role: user.role,
         permissions: user.permissions,
       },

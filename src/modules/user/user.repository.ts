@@ -1,24 +1,43 @@
 import { UserModel, IUser } from './user.model';
 import { QueryBuilder, QueryOptions, PaginatedResult } from '../../shared/utils/query-builder';
+import { PopulateOptions, Query } from 'mongoose';
+
+export type PopulateOption = string | PopulateOptions | (string | PopulateOptions)[];
+
+export interface ExtendedQueryOptions extends QueryOptions {
+  populate?: PopulateOption;
+}
 
 export class UserRepository {
+  private applyPopulate<T>(query: Query<T, any>, populate?: PopulateOption): Query<T, any> {
+    if (!populate) return query;
+
+    if (Array.isArray(populate)) {
+      return query.populate(populate);
+    }
+
+    return query.populate(populate as any);
+  }
+
   public async create(userData: Partial<IUser>): Promise<IUser> {
     const user = new UserModel(userData);
     return await user.save();
   }
 
-  public async findById(id: string): Promise<IUser | null> {
-    return await UserModel.findById(id);
+  public async findById(id: string, populate?: PopulateOption): Promise<IUser | null> {
+    const query = UserModel.findById(id);
+    return await this.applyPopulate(query, populate).exec();
   }
 
-  public async findByEmail(email: string): Promise<IUser | null> {
-    return await UserModel.findOne({ email: email.toLowerCase() });
+  public async findByEmail(email: string, populate?: PopulateOption): Promise<IUser | null> {
+    const query = UserModel.findOne({ email: email.toLowerCase() });
+    return await this.applyPopulate(query, populate).exec();
   }
 
-  public async findAll(options: QueryOptions): Promise<PaginatedResult<IUser>> {
+  public async findAll(options: ExtendedQueryOptions): Promise<PaginatedResult<IUser>> {
     const queryBuilder = new QueryBuilder<IUser>(options);
 
-    const query = UserModel.find(queryBuilder.getFilter())
+    let query = UserModel.find(queryBuilder.getFilter())
       .sort(queryBuilder.getSort())
       .skip(queryBuilder.getSkip())
       .limit(queryBuilder.getLimit());
@@ -26,6 +45,8 @@ export class UserRepository {
     if (queryBuilder.getSelect()) {
       query.select(queryBuilder.getSelect());
     }
+
+    query = this.applyPopulate(query, options.populate) as any;
 
     const [data, total] = await Promise.all([
       query.exec(),
@@ -35,12 +56,18 @@ export class UserRepository {
     return queryBuilder.buildPaginatedResult(data, total);
   }
 
-  public async update(id: string, updateData: Partial<IUser>): Promise<IUser | null> {
-    return await UserModel.findByIdAndUpdate(
+  public async update(
+    id: string,
+    updateData: Partial<IUser>,
+    populate?: PopulateOption,
+  ): Promise<IUser | null> {
+    const query = UserModel.findByIdAndUpdate(
       id,
       { $set: updateData, $inc: { version: 1 } },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
+
+    return await this.applyPopulate(query, populate).exec();
   }
 
   public async delete(id: string): Promise<boolean> {

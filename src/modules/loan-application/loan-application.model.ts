@@ -20,6 +20,7 @@ export enum LoanStatus {
   ACTIVE = 'active',
   COMPLETED = 'completed',
   DEFAULTED = 'defaulted',
+  CLOSED = 'closed',
 }
 
 export interface ILoanApplication extends Document {
@@ -28,6 +29,7 @@ export interface ILoanApplication extends Document {
   amount: number;
   purpose: LoanPurpose;
   term: number;
+  debtToIncomeRatio: number;
   interestRate: number;
   status: LoanStatus;
   statusHistory: Array<{
@@ -36,7 +38,7 @@ export interface ILoanApplication extends Document {
     changedAt: Date;
     reason?: string;
   }>;
-  creditScore?: number;
+  creditScore: number;
   employmentDetails?: {
     employer: string;
     position: string;
@@ -91,6 +93,11 @@ const loanApplicationSchema = new Schema<ILoanApplication>(
       required: true,
       min: 1,
       max: 360,
+    },
+    debtToIncomeRatio: {
+      type: Number,
+      min: 0,
+      max: 100,
     },
     interestRate: {
       type: Number,

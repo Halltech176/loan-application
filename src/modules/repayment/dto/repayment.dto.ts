@@ -26,6 +26,10 @@ export class RecordPaymentDto {
   @IsString()
   paymentMethod!: string;
 
+  @IsNumber()
+  @Min(0)
+  amount!: number;
+
   @IsString()
   @IsOptional()
   transactionReference?: string;

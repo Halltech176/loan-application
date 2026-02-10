@@ -5,6 +5,7 @@ import { NotFoundError, ConflictError, UnauthorizedError } from '../../shared/er
 import { QueryOptions, PaginatedResult } from '../../shared/utils/query-builder';
 import bcrypt from 'bcryptjs';
 import { EventPublisher } from '../../infrastructure/events/event-publisher';
+import { Types } from 'mongoose';
 
 export class UserService {
   private repository: UserRepository;
@@ -17,14 +18,14 @@ export class UserService {
 
   public async createUser(dto: CreateUserDto): Promise<IUser> {
     const existingUser = await this.repository.findByEmail(dto.email);
-    
+
     if (existingUser) {
       throw new ConflictError('User with this email already exists');
     }
 
     const hashedPassword = await bcrypt.hash(
       dto.password,
-      parseInt(process.env.BCRYPT_ROUNDS || '10')
+      parseInt(process.env.BCRYPT_ROUNDS || '10'),
     );
 
     const user = await this.repository.create({
@@ -46,8 +47,8 @@ export class UserService {
   }
 
   public async getUserById(id: string): Promise<IUser> {
-    const user = await this.repository.findById(id);
-    
+    const user = await this.repository.findById(id, 'customerId');
+
     if (!user) {
       throw new NotFoundError('User');
     }
@@ -61,7 +62,7 @@ export class UserService {
 
   public async updateUser(id: string, dto: UpdateUserDto): Promise<IUser> {
     const user = await this.repository.findById(id);
-    
+
     if (!user) {
       throw new NotFoundError('User');
     }
@@ -84,9 +85,25 @@ export class UserService {
     return updatedUser;
   }
 
+  public async linkCustomer(userId: string, customerId: Types.ObjectId): Promise<IUser> {
+    const user = await this.repository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundError('User');
+    }
+
+    const updatedUser = await this.repository.update(userId, { customerId });
+
+    if (!updatedUser) {
+      throw new NotFoundError('User');
+    }
+
+    return updatedUser;
+  }
+
   public async deleteUser(id: string): Promise<void> {
     const user = await this.repository.findById(id);
-    
+
     if (!user) {
       throw new NotFoundError('User');
     }
@@ -105,20 +122,20 @@ export class UserService {
 
   public async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
     const user = await this.repository.findById(userId);
-    
+
     if (!user) {
       throw new NotFoundError('User');
     }
 
     const isPasswordValid = await bcrypt.compare(dto.currentPassword, user.password);
-    
+
     if (!isPasswordValid) {
       throw new UnauthorizedError('Current password is incorrect');
     }
 
     const hashedPassword = await bcrypt.hash(
       dto.newPassword,
-      parseInt(process.env.BCRYPT_ROUNDS || '10')
+      parseInt(process.env.BCRYPT_ROUNDS || '10'),
     );
 
     await this.repository.update(userId, { password: hashedPassword });
@@ -131,3 +148,5 @@ export class UserService {
     });
   }
 }
+
+export const userService = new UserService();

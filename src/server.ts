@@ -10,6 +10,8 @@ import { RedisConnection } from './infrastructure/cache/redis-connection';
 import { RabbitMQConnection } from './infrastructure/messaging/rabbitmq-connection';
 import { EmailService } from './infrastructure/email/email.service';
 import { AuditService } from './infrastructure/audit/audit.service';
+import { initializeLoanWorkflow } from './infrastructure/events/handlers/loan-workflow.handlers';
+import { initializeRepaymentScheduleWorkflow } from './infrastructure/events/handlers/reoayment-workflow.handler';
 
 const logger = Logger.getInstance();
 
@@ -29,6 +31,9 @@ async function bootstrap(): Promise<void> {
     logger.info('Email service initialized and event listeners set up');
 
     new AuditService();
+
+    await initializeLoanWorkflow();
+    await initializeRepaymentScheduleWorkflow();
 
     logger.info('Audit service initialized');
 

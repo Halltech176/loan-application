@@ -37,13 +37,7 @@ router.put(
   controller.update,
 );
 
-router.post(
-  '/:id/submit',
-  authGuard,
-  permissionGuard('loan:create'),
-  idempotencyGuard,
-  controller.submit,
-);
+router.post('/:id/submit', roleGuard(UserRole.CUSTOMER), idempotencyGuard, controller.submit);
 
 router.post(
   '/:id/review',

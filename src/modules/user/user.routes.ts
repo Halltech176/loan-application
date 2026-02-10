@@ -13,43 +13,30 @@ router.post(
   authGuard,
   permissionGuard('user:create'),
   validateDto(CreateUserDto),
-  controller.createUser
+  controller.createUser,
 );
 
-router.get(
-  '/',
-  authGuard,
-  permissionGuard('user:read'),
-  controller.getUsers
-);
+router.get('/me', authGuard, controller.getMe);
 
-router.get(
-  '/:id',
-  authGuard,
-  permissionGuard('user:read'),
-  controller.getUser
-);
+router.get('/', authGuard, permissionGuard('user:read'), controller.getUsers);
+
+router.get('/:id', authGuard, permissionGuard('user:read'), controller.getUser);
 
 router.put(
   '/:id',
   authGuard,
   permissionGuard('user:update'),
   validateDto(UpdateUserDto),
-  controller.updateUser
+  controller.updateUser,
 );
 
-router.delete(
-  '/:id',
-  authGuard,
-  permissionGuard('user:delete'),
-  controller.deleteUser
-);
+router.delete('/:id', authGuard, permissionGuard('user:delete'), controller.deleteUser);
 
 router.post(
   '/change-password',
   authGuard,
   validateDto(ChangePasswordDto),
-  controller.changePassword
+  controller.changePassword,
 );
 
 export { router as userRouter };

@@ -43,6 +43,23 @@ export class UserController {
     }
   };
 
+  getMe = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const user = await this.service.getUserById(String(req.user!.id));
+
+      res.status(200).json({
+        success: true,
+        data: user,
+        meta: {
+          requestId: req.headers['x-request-id'],
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public getUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { page, limit, sort, fields, ...filters } = req.query;

@@ -4,6 +4,8 @@ import { CreateCustomerDto, UpdateCustomerDto } from './dto/customer.dto';
 import { NotFoundError } from '../../shared/errors/app-error';
 import { QueryOptions, PaginatedResult } from '../../shared/utils/query-builder';
 import { EventPublisher } from '../../infrastructure/events/event-publisher';
+import { Types } from 'mongoose';
+import { userService } from '../user/user.service';
 
 export class CustomerService {
   private repository: CustomerRepository;
@@ -15,7 +17,12 @@ export class CustomerService {
   }
 
   public async create(userId: string, dto: CreateCustomerDto): Promise<ICustomer> {
-    const entity = await this.repository.create(dto);
+    const entity = await this.repository.create({
+      ...dto,
+      userId: new Types.ObjectId(userId),
+    });
+
+    await userService.linkCustomer(userId, entity._id);
 
     await this.eventPublisher.publish({
       eventType: 'customer.created',
@@ -30,7 +37,7 @@ export class CustomerService {
 
   public async getById(id: string): Promise<ICustomer> {
     const entity = await this.repository.findById(id);
-    
+
     if (!entity) {
       throw new NotFoundError('Customer');
     }
@@ -44,7 +51,7 @@ export class CustomerService {
 
   public async update(id: string, userId: string, dto: UpdateCustomerDto): Promise<ICustomer> {
     const entity = await this.repository.findById(id);
-    
+
     if (!entity) {
       throw new NotFoundError('Customer');
     }
@@ -68,7 +75,7 @@ export class CustomerService {
 
   public async delete(id: string, userId: string): Promise<void> {
     const entity = await this.repository.findById(id);
-    
+
     if (!entity) {
       throw new NotFoundError('Customer');
     }

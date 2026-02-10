@@ -1,18 +1,27 @@
-import { IsEmail, IsString, IsBoolean, IsArray, IsOptional, MinLength, IsEnum } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  IsBoolean,
+  IsArray,
+  IsOptional,
+  MinLength,
+  IsEnum,
+  Matches,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsEmail()
   email!: string;
 
   @IsString()
+  @Matches(/^(\+234|0)[789][01]\d{8}$/, {
+    message: 'Invalid Nigerian phone number format. Use format: +2348012345678 or 08012345678',
+  })
+  phoneNumber!: string;
+
+  @IsString()
   @MinLength(8)
   password!: string;
-
-  @IsString()
-  firstName!: string;
-
-  @IsString()
-  lastName!: string;
 
   @IsEnum(['admin', 'loan_officer', 'finance', 'applicant'])
   role!: string;

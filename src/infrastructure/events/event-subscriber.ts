@@ -16,12 +16,12 @@ export class EventSubscriber {
   public async subscribe(
     queueName: string,
     eventPatterns: string[],
-    handler: EventHandler
+    handler: EventHandler,
   ): Promise<void> {
     try {
       await this.rabbitmq.subscribe(queueName, eventPatterns, async (message) => {
         const event = message as DomainEvent;
-        
+
         this.logger.info('Event received', {
           eventId: event.eventId,
           eventType: event.eventType,
@@ -31,7 +31,7 @@ export class EventSubscriber {
 
         try {
           await handler(event);
-          
+
           this.logger.debug('Event processed successfully', {
             eventId: event.eventId,
           });

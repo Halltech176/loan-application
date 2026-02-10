@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export enum UserRole {
@@ -15,10 +15,10 @@ export enum UserStatus {
 }
 
 export interface IUser extends Document {
+  customerId?: Types.ObjectId;
   email: string;
+  phoneNumber: string;
   password: string;
-  firstName: string;
-  lastName: string;
   role: string;
   permissions: string[];
   isActive: boolean;
@@ -36,28 +36,41 @@ export interface IUser extends Document {
 
 const userSchema = new Schema<IUser>(
   {
+    customerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Customer',
+    },
+
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
       trim: true,
+      validate: {
+        validator: function (value: string) {
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        },
+        message: 'Invalid email format',
+      },
+    },
+    phoneNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: {
+        validator: function (value: string) {
+          return /^\+?[1-9]\d{1,14}$/.test(value);
+        },
+        message: 'Invalid phone number format',
+      },
     },
     password: {
       type: String,
       required: true,
       minlength: 6,
     },
-    firstName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    lastName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+
     role: {
       type: String,
       required: true,

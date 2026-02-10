@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AppError } from '../errors/app-error';
+import { AppError, ValidationError } from '../errors/app-error';
 import { Logger } from '../../infrastructure/logging/logger';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -7,6 +7,33 @@ const logger = Logger.getInstance();
 
 export const errorHandler = (err: Error, req: Request, res: Response, _: NextFunction): void => {
   const requestId = (req.headers['x-request-id'] as string) || uuidv4();
+
+  // Handle custom ValidationError from app-error (must come before general AppError check)
+  if (err instanceof ValidationError) {
+    logger.error('Validation Error', {
+      requestId,
+      statusCode: err.statusCode,
+      code: err.code,
+      message: err.message,
+      details: err.details,
+      path: req.path,
+      method: req.method,
+    });
+
+    res.status(err.statusCode).json({
+      success: false,
+      error: {
+        code: err.code,
+        message: err.message,
+        details: err.details || null,
+      },
+      meta: {
+        requestId,
+        timestamp: new Date().toISOString(),
+      },
+    });
+    return;
+  }
 
   if (err instanceof AppError) {
     logger.error(`Application Error: ${err.code}`, {
@@ -80,10 +107,19 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
     return;
   }
 
-  if (err.name === 'ValidationError' && !err.hasOwnProperty('statusCode')) {
-    logger.error('Class Validator Error', {
+  // Handle Mongoose ValidationError
+  if (err.name === 'ValidationError' && (err as any).errors) {
+    const mongooseErrors = (err as any).errors;
+    const formattedErrors: Record<string, string[]> = {};
+
+    Object.keys(mongooseErrors).forEach((key) => {
+      const error = mongooseErrors[key];
+      formattedErrors[key] = [error.message];
+    });
+
+    logger.error('Mongoose Validation Error', {
       requestId,
-      error: err.message,
+      errors: formattedErrors,
       path: req.path,
       method: req.method,
     });
@@ -93,7 +129,7 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
       error: {
         code: 'VALIDATION_ERROR',
         message: 'Validation failed',
-        details: err.message,
+        details: formattedErrors,
       },
       meta: {
         requestId,
@@ -209,31 +245,6 @@ export const errorHandler = (err: Error, req: Request, res: Response, _: NextFun
         code: 'INVALID_ID',
         message: 'Invalid ID format',
         details: null,
-      },
-      meta: {
-        requestId,
-        timestamp: new Date().toISOString(),
-      },
-    });
-    return;
-  }
-
-  if (err.name === 'MongooseValidationError') {
-    const errors = Object.values((err as any).errors).map((e: any) => e.message);
-
-    logger.error('Mongoose Validation Error', {
-      requestId,
-      errors,
-      path: req.path,
-      method: req.method,
-    });
-
-    res.status(400).json({
-      success: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: 'Validation failed',
-        details: errors,
       },
       meta: {
         requestId,
