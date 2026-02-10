@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { RepaymentScheduleService } from './repayment-schedule.service';
 import { Types } from 'mongoose';
 import { AuthenticatedRequest } from '@/shared/guards/auth.guard';
