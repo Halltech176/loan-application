@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { RepaymentService } from './repayment.service';
 import { AuthenticatedRequest } from '../../shared/guards/auth.guard';
-import { Types } from 'mongoose';
 
 export class RepaymentController {
   private service: RepaymentService;
