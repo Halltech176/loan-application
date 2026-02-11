@@ -9,14 +9,6 @@ export class CreateRepaymentDto {
   @Min(0)
   amount!: number;
 
-  @IsNumber()
-  @Min(0)
-  principalAmount!: number;
-
-  @IsNumber()
-  @Min(0)
-  interestAmount!: number;
-
   @IsDate()
   @Type(() => Date)
   dueDate!: Date;
