@@ -123,7 +123,8 @@ docker-compose up -d
 docker-compose exec app npm run migrate:up
 ```
 
-5. The API will be available at `http://localhost:3000`
+1. The Local API will be available at `http://localhost:3000`
+2. The Deployed API will be available at `https://loan-application-tl7d.onrender.com`
 
 ### Manual Setup
 
