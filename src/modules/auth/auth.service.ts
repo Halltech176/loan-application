@@ -16,7 +16,7 @@ import { ConflictError, UnauthorizedError, NotFoundError } from '../../shared/er
 import { EventPublisher } from '../../infrastructure/events/event-publisher';
 import { Logger } from '../../infrastructure/logging/logger';
 import { Types } from 'mongoose';
-import { UserRole } from '../user/user.model';
+import { UserRole, UserStatus } from '../user/user.model';
 
 interface TokenPair {
   accessToken: string;
@@ -124,6 +124,10 @@ export class AuthService {
 
     if (!user.isActive) {
       throw new UnauthorizedError('Account is inactive');
+    }
+
+    if (user.status === UserStatus.SUSPENDED) {
+      throw new UnauthorizedError('Account is suspended. Please contact support.');
     }
 
     const isPasswordValid = await user.comparePassword(dto.password);
