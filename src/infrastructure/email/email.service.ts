@@ -48,6 +48,12 @@ export class EmailService {
       'email-queue',
       [
         'auth.user.registered',
+        'auth.user.password_reset_requested',
+        'auth.user.password_reset_completed',
+        'auth.user.email_verification_requested',
+        'auth.user.email_verified',
+        'auth.user.phone_verification_requested',
+        'auth.user.phone_verified',
         'loan_application.loan_application.submitted',
         'loan_application.loan_application.approved',
         'loan_application.loan_application.rejected',
@@ -79,6 +85,24 @@ export class EmailService {
       switch (event.eventType) {
         case 'user.registered':
           await this.sendWelcomeEmail(event.payload);
+          break;
+        case 'user.password_reset_requested':
+          await this.sendPasswordResetEmail(event);
+          break;
+        case 'user.password_reset_completed':
+          await this.sendPasswordResetConfirmationEmail(event);
+          break;
+        case 'user.email_verification_requested':
+          await this.sendEmailVerificationEmail(event);
+          break;
+        case 'user.email_verified':
+          await this.sendEmailVerifiedEmail(event);
+          break;
+        case 'user.phone_verification_requested':
+          await this.sendPhoneVerificationEmail(event);
+          break;
+        case 'user.phone_verified':
+          await this.sendPhoneVerifiedEmail(event);
           break;
         case 'loan_application.submitted':
           await this.sendApplicationSubmittedEmail(event);
@@ -125,7 +149,7 @@ export class EmailService {
   }
 
   public async sendWelcomeEmail(payload: any): Promise<void> {
-    const { email, firstName = 'User', role } = payload;
+    const { email, firstName = 'User', role, verificationToken } = payload;
 
     const template = this.getTemplate('welcome');
     const html = template({
@@ -133,6 +157,9 @@ export class EmailService {
       email,
       role,
       loginUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`,
+      verificationUrl: verificationToken
+        ? `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`
+        : null,
       year: new Date().getFullYear(),
     });
 
@@ -141,6 +168,131 @@ export class EmailService {
       subject: 'Welcome to Loan Platform - Registration Successful',
       html,
     });
+  }
+
+  public async sendPasswordResetEmail(event: DomainEvent): Promise<void> {
+    const { email, firstName, resetToken } = event.payload;
+
+    const template = this.getTemplate('password-reset-request');
+    const html = template({
+      firstName,
+      email,
+      resetToken,
+      resetUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`,
+      year: new Date().getFullYear(),
+    });
+
+    await this.sendMail({
+      to: email,
+      subject: 'Password Reset Request - Loan Platform',
+      html,
+    });
+
+    this.logger.info('Password reset email sent', { email });
+  }
+
+  public async sendPasswordResetConfirmationEmail(event: DomainEvent): Promise<void> {
+    const { email, firstName } = event.payload;
+
+    const template = this.getTemplate('password-reset-confirmation');
+    const html = template({
+      firstName,
+      email,
+      loginUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`,
+      supportEmail: process.env.SUPPORT_EMAIL || 'support@loanplatform.com',
+      year: new Date().getFullYear(),
+    });
+
+    await this.sendMail({
+      to: email,
+      subject: 'Password Reset Successful - Loan Platform',
+      html,
+    });
+
+    this.logger.info('Password reset confirmation email sent', { email });
+  }
+
+  public async sendEmailVerificationEmail(event: DomainEvent): Promise<void> {
+    const { email, firstName, verificationToken } = event.payload;
+
+    const template = this.getTemplate('email-verification');
+    const html = template({
+      firstName,
+      email,
+      verificationToken,
+      verificationUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`,
+      year: new Date().getFullYear(),
+    });
+
+    await this.sendMail({
+      to: email,
+      subject: 'Verify Your Email - Loan Platform',
+      html,
+    });
+
+    this.logger.info('Email verification email sent', { email });
+  }
+
+  public async sendEmailVerifiedEmail(event: DomainEvent): Promise<void> {
+    const { email, firstName } = event.payload;
+
+    const template = this.getTemplate('email-verified');
+    const html = template({
+      firstName,
+      email,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`,
+      year: new Date().getFullYear(),
+    });
+
+    await this.sendMail({
+      to: email,
+      subject: 'Email Verified Successfully - Loan Platform',
+      html,
+    });
+
+    this.logger.info('Email verified confirmation sent', { email });
+  }
+
+  public async sendPhoneVerificationEmail(event: DomainEvent): Promise<void> {
+    const { email, firstName, phoneNumber, verificationCode } = event.payload;
+
+    const template = this.getTemplate('phone-verification');
+    const html = template({
+      firstName,
+      email,
+      phoneNumber,
+      verificationCode,
+      year: new Date().getFullYear(),
+    });
+
+    await this.sendMail({
+      to: email,
+      subject: 'Phone Verification Code - Loan Platform',
+      html,
+    });
+
+    this.logger.info('Phone verification email sent', { email, phoneNumber });
+  }
+
+  public async sendPhoneVerifiedEmail(event: DomainEvent): Promise<void> {
+    const { email, firstName, phoneNumber } = event.payload;
+
+    const template = this.getTemplate('phone-verified');
+    const html = template({
+      firstName,
+      email,
+      phoneNumber,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`,
+      year: new Date().getFullYear(),
+    });
+
+    await this.sendMail({
+      to: email,
+      subject: 'Phone Number Verified - Loan Platform',
+      html,
+    });
+
+    this.logger.info('Phone verified confirmation sent', { email, phoneNumber });
   }
 
   public async sendApplicationSubmittedEmail(event: DomainEvent): Promise<void> {
@@ -336,7 +488,7 @@ export class EmailService {
 
     await this.sendMail({
       to: email,
-      subject: ' Congratulations! Loan Fully Repaid',
+      subject: 'Congratulations! Loan Fully Repaid',
       html,
     });
 
@@ -404,7 +556,7 @@ export class EmailService {
 
     await this.sendMail({
       to: email,
-      subject: ' Payment Due Today',
+      subject: 'Payment Due Today',
       html,
     });
 
@@ -469,6 +621,53 @@ export class EmailService {
           <p>Hello {{firstName}},</p>
           <p>Your account has been created successfully.</p>
           <p><a href="{{loginUrl}}" style="background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Login to Your Account</a></p>
+        </div>
+      `,
+      'password-reset-request': `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h1>Password Reset Request</h1>
+          <p>Hello {{firstName}},</p>
+          <p>Use the following token to reset your password:</p>
+          <p>Your reset token is: <strong>{{resetToken}}</strong></p>
+          <p>This token expires in 1 hour.</p>
+        </div>
+      `,
+      'password-reset-confirmation': `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h1>Password Reset Successful</h1>
+          <p>Hello {{firstName}},</p>
+          <p>Your password has been successfully reset.</p>
+          <p><a href="{{loginUrl}}">Login Now</a></p>
+        </div>
+      `,
+      'email-verification': `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h1>Verify Your Email</h1>
+          <p>Hello {{firstName}},</p>
+          <p>Use the following token to verify your email:</p>
+          <p>Your verification token is: <strong>{{verificationToken}}</strong></p>
+        </div>
+      `,
+      'email-verified': `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h1>Email Verified!</h1>
+          <p>Hello {{firstName}},</p>
+          <p>Your email has been successfully verified.</p>
+        </div>
+      `,
+      'phone-verification': `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h1>Phone Verification Code</h1>
+          <p>Hello {{firstName}},</p>
+          <p>Your verification code is: <strong>{{verificationCode}}</strong></p>
+          <p>This code expires in 10 minutes.</p>
+        </div>
+      `,
+      'phone-verified': `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h1>Phone Verified!</h1>
+          <p>Hello {{firstName}},</p>
+          <p>Your phone number has been successfully verified.</p>
         </div>
       `,
       'application-submitted': `

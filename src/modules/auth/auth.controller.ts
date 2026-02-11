@@ -43,6 +43,99 @@ export class AuthController {
     }
   };
 
+  public requestVerification = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      await this.service.requestVerification(String(req.user?.id), req.body);
+
+      res.status(200).json({
+        success: true,
+        data: { message: 'Verification email sent if the email is registered' },
+        meta: {
+          requestId: req.headers['x-request-id'],
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public verifyEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      await this.service.verifyEmail(req.body);
+
+      res.status(200).json({
+        success: true,
+        data: { message: 'Email verified successfully' },
+        meta: {
+          requestId: req.headers['x-request-id'],
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public verifyPhone = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      await this.service.verifyPhone(req.body.token);
+
+      res.status(200).json({
+        success: true,
+        data: { message: 'Phone number verified successfully' },
+        meta: {
+          requestId: req.headers['x-request-id'],
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public forgotPassword = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      await this.service.forgotPassword(req.body);
+
+      res.status(200).json({
+        success: true,
+        data: { message: 'Password reset email sent if the email is registered' },
+        meta: {
+          requestId: req.headers['x-request-id'],
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      await this.service.resetPassword(req.body);
+
+      res.status(200).json({
+        success: true,
+        data: { message: 'Password reset successfully' },
+        meta: {
+          requestId: req.headers['x-request-id'],
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public refreshToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const tokens = await this.service.refreshToken(req.body.refreshToken);
