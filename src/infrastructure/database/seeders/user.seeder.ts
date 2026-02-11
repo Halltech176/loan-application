@@ -1,3 +1,4 @@
+import { getPermissionsForRole } from '@/data/permission';
 import { Logger } from '@/infrastructure/logging/logger';
 import { UserModel, UserRole, UserStatus } from '@/modules/user/user.model';
 
@@ -21,6 +22,7 @@ export class UserSeeder {
           phoneNumber: '+1234567890',
           role: UserRole.ADMIN,
           status: UserStatus.ACTIVE,
+          permissions: getPermissionsForRole(UserRole.ADMIN),
         },
         {
           email: 'officer@loanplatform.com',
@@ -30,6 +32,7 @@ export class UserSeeder {
           phoneNumber: '+1234567891',
           role: UserRole.LOAN_OFFICER,
           status: UserStatus.ACTIVE,
+          permissions: getPermissionsForRole(UserRole.LOAN_OFFICER),
         },
         {
           email: 'customer1@example.com',
@@ -39,6 +42,7 @@ export class UserSeeder {
           phoneNumber: '+1234567892',
           role: UserRole.CUSTOMER,
           status: UserStatus.ACTIVE,
+          permissions: getPermissionsForRole(UserRole.CUSTOMER),
         },
         {
           email: 'customer2@example.com',
@@ -48,6 +52,7 @@ export class UserSeeder {
           phoneNumber: '+1234567893',
           role: UserRole.CUSTOMER,
           status: UserStatus.ACTIVE,
+          permissions: getPermissionsForRole(UserRole.CUSTOMER),
         },
         {
           email: 'customer3@example.com',
@@ -57,6 +62,7 @@ export class UserSeeder {
           phoneNumber: '+1234567894',
           role: UserRole.CUSTOMER,
           status: UserStatus.ACTIVE,
+          permissions: getPermissionsForRole(UserRole.CUSTOMER),
         },
         {
           email: 'suspended@example.com',
@@ -66,6 +72,7 @@ export class UserSeeder {
           phoneNumber: '+1234567895',
           role: UserRole.CUSTOMER,
           status: UserStatus.SUSPENDED,
+          permissions: getPermissionsForRole(UserRole.CUSTOMER),
         },
       ];
 

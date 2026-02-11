@@ -57,6 +57,9 @@ export class LoanApplicationService {
     dto: CreateLoanApplicationDto,
   ): Promise<ILoanApplication> {
     const customer = await this.customerRepository.findCustomerByUserId(String(applicantId));
+    if (!customer) {
+      throw new NotFoundError('Kindly create a customer profile before applying for a loan');
+    }
     if (!customer?.isVerified) {
       throw new UnprocessableEntityError(
         'Customer must be verified to apply for a loan',

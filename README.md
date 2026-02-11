@@ -1,7 +1,5 @@
 # Loan Application Platform
 
-A production-ready, enterprise-grade loan application platform built with Node.js, TypeScript, MongoDB, Redis, and RabbitMQ.
-
 ## Features
 
 ### Core Functionality
@@ -104,7 +102,7 @@ module-name/
 - Redis 7+
 - RabbitMQ 3+
 
-### Using Docker (Recommended)
+### Using Docker (Recommended, Optional)
 
 1. Clone the repository
 2. Copy environment variables:
@@ -171,146 +169,6 @@ Key variables:
 
 ## API Documentation
 
-### Authentication Endpoints
-
-#### Register
-
-```http
-POST /api/v1/auth/register
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "SecurePass123!",
-  "firstName": "John",
-  "lastName": "Doe"
-}
-```
-
-#### Login
-
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "SecurePass123!"
-}
-```
-
-#### Refresh Token
-
-```http
-POST /api/v1/auth/refresh-token
-Content-Type: application/json
-
-{
-  "refreshToken": "your-refresh-token"
-}
-```
-
-### Loan Application Endpoints
-
-#### Create Loan Application
-
-```http
-POST /api/v1/loan-applications
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-  "amount": 50000,
-  "purpose": "Business expansion",
-  "term": 24,
-  "interestRate": 12.5,
-  "creditScore": 750
-}
-```
-
-#### Get All Applications (with pagination, filtering)
-
-```http
-GET /api/v1/loan-applications?page=1&limit=10&status=submitted&sort=-createdAt
-Authorization: Bearer {access_token}
-```
-
-#### Submit Application
-
-```http
-POST /api/v1/loan-applications/{id}/submit
-Authorization: Bearer {access_token}
-Idempotency-Key: {unique-key}
-```
-
-#### Review Application (Approve/Reject)
-
-```http
-POST /api/v1/loan-applications/{id}/review
-Authorization: Bearer {access_token}
-Idempotency-Key: {unique-key}
-Content-Type: application/json
-
-{
-  "decision": "approve",
-  "reviewNotes": "Application meets all criteria"
-}
-```
-
-### Disbursement Endpoints
-
-#### Create Disbursement
-
-```http
-POST /api/v1/disbursements
-Authorization: Bearer {access_token}
-Idempotency-Key: {unique-key}
-Content-Type: application/json
-
-{
-  "loanApplicationId": "loan-id",
-  "amount": 50000,
-  "recipientAccount": {
-    "accountNumber": "1234567890",
-    "accountName": "John Doe",
-    "bankName": "Example Bank",
-    "bankCode": "001"
-  }
-}
-```
-
-### Repayment Endpoints
-
-#### Create Repayment Schedule
-
-```http
-POST /api/v1/repayments
-Authorization: Bearer {access_token}
-Content-Type: application/json
-
-{
-  "loanApplicationId": "loan-id",
-  "amount": 2500,
-  "principalAmount": 2083.33,
-  "interestAmount": 416.67,
-  "dueDate": "2025-02-01T00:00:00.000Z"
-}
-```
-
-#### Record Payment
-
-```http
-POST /api/v1/repayments/{id}/record-payment
-Authorization: Bearer {access_token}
-Idempotency-Key: {unique-key}
-Content-Type: application/json
-
-{
-  "paymentMethod": "bank_transfer",
-  "transactionReference": "TXN123456"
-}
-```
-
 ## RBAC (Role-Based Access Control)
 
 ### Roles
@@ -337,43 +195,7 @@ After running migrations:
 - Email: `admin@loanplatform.com`
 - Password: `Admin@123456`
 
-⚠️ **Change these credentials immediately in production!**
-
-## Event System
-
-The platform uses RabbitMQ for event-driven architecture. Events are published for all critical actions:
-
-### Event Types
-
-- `user.registered`, `user.logged_in`, `user.logged_out`
-- `loan_application.created`, `loan_application.submitted`, `loan_application.approved`, `loan_application.rejected`
-- `credit_approval.created`
-- `disbursement.created`, `disbursement.completed`, `disbursement.failed`
-- `repayment.created`, `repayment.completed`
-
-### Event Consumers
-
-- **Audit Service**: Logs all events to audit trail
-- **Email Service**: Sends notifications based on events
-
-## Error Handling
-
-All errors follow a consistent structure:
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Human-readable error message",
-    "details": null
-  },
-  "meta": {
-    "requestId": "uuid",
-    "timestamp": "2025-02-05T10:30:00.000Z"
-  }
-}
-```
+````
 
 ### HTTP Status Codes
 
@@ -416,7 +238,7 @@ All logs are in JSON format with:
 
 ```bash
 npm test
-```
+````
 
 ### Run with Coverage
 
