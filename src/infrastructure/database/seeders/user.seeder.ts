@@ -1,6 +1,8 @@
 import { getPermissionsForRole } from '@/data/permission';
 import { Logger } from '@/infrastructure/logging/logger';
 import { UserModel, UserRole, UserStatus } from '@/modules/user/user.model';
+import { CustomerModel } from '@/modules/customer/customer.model';
+import { generateCustomerData } from '@/data/csutomer.data';
 
 const logger = Logger.getInstance();
 
@@ -23,6 +25,8 @@ export class UserSeeder {
           role: UserRole.ADMIN,
           status: UserStatus.ACTIVE,
           permissions: getPermissionsForRole(UserRole.ADMIN),
+          phoneVerified: true,
+          emailVerified: true,
         },
         {
           email: 'officer@loanplatform.com',
@@ -33,6 +37,8 @@ export class UserSeeder {
           role: UserRole.LOAN_OFFICER,
           status: UserStatus.ACTIVE,
           permissions: getPermissionsForRole(UserRole.LOAN_OFFICER),
+          phoneVerified: true,
+          emailVerified: true,
         },
         {
           email: 'customer1@example.com',
@@ -43,6 +49,8 @@ export class UserSeeder {
           role: UserRole.CUSTOMER,
           status: UserStatus.ACTIVE,
           permissions: getPermissionsForRole(UserRole.CUSTOMER),
+          phoneVerified: true,
+          emailVerified: true,
         },
         {
           email: 'customer2@example.com',
@@ -53,6 +61,8 @@ export class UserSeeder {
           role: UserRole.CUSTOMER,
           status: UserStatus.ACTIVE,
           permissions: getPermissionsForRole(UserRole.CUSTOMER),
+          phoneVerified: true,
+          emailVerified: true,
         },
         {
           email: 'customer3@example.com',
@@ -73,6 +83,8 @@ export class UserSeeder {
           role: UserRole.CUSTOMER,
           status: UserStatus.SUSPENDED,
           permissions: getPermissionsForRole(UserRole.CUSTOMER),
+          phoneVerified: true,
+          emailVerified: true,
         },
       ];
 
@@ -80,6 +92,14 @@ export class UserSeeder {
         const user = new UserModel(userData);
         await user.save();
         logger.info('User seeded', { email: user.email, role: user.role });
+
+        if (user.role === UserRole.CUSTOMER) {
+          const customerData = generateCustomerData(user._id as any);
+          const customer = new CustomerModel(customerData);
+          await customer.save();
+
+          logger.info('Customer profile seeded', { userId: user._id });
+        }
       }
 
       logger.info(`Successfully seeded ${users.length} users`);

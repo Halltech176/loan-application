@@ -5,11 +5,14 @@ import {
   LoanStatus,
 } from '@/modules/loan-application/loan-application.model';
 import { UserModel, UserRole, UserStatus } from '@/modules/user/user.model';
+import { Types } from 'mongoose';
 
 const logger = Logger.getInstance();
 
 export class LoanSeeder {
   async seed(): Promise<void> {
+    const systemId = new Types.ObjectId('000000000000000000000000');
+
     try {
       const existingLoans = await LoanApplicationModel.countDocuments();
       if (existingLoans > 0) {
@@ -39,7 +42,7 @@ export class LoanSeeder {
           status: LoanStatus.SUBMITTED,
           interestRate: 0,
           outstandingBalance: 0,
-          decisionHistory: [],
+          statusHistory: [],
         },
         {
           applicantId: customers[0]._id.toString(),
@@ -54,12 +57,12 @@ export class LoanSeeder {
           outstandingBalance: 26706.6,
           approvedBy: officerId,
           approvedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          decisionHistory: [
+          statusHistory: [
             {
               status: LoanStatus.APPROVED,
-              decidedBy: officerId || 'system',
+              changedBy: officerId || systemId.toString(),
               reason: 'Good credit score and stable income',
-              timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+              changedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
             },
           ],
         },
@@ -72,7 +75,7 @@ export class LoanSeeder {
           status: LoanStatus.UNDER_REVIEW,
           interestRate: 0,
           outstandingBalance: 0,
-          decisionHistory: [],
+          statusHistory: [],
         },
         {
           applicantId: customers[1]._id.toString(),
@@ -90,24 +93,24 @@ export class LoanSeeder {
           disbursedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
           approvedBy: officerId,
           approvedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-          decisionHistory: [
+          statusHistory: [
             {
               status: LoanStatus.APPROVED,
-              decidedBy: officerId || 'system',
+              changedBy: officerId || systemId.toString(),
               reason: 'Approved for educational purposes',
-              timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+              changedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             },
             {
               status: LoanStatus.DISBURSED,
-              decidedBy: officerId || 'system',
-              timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+              changedBy: officerId || systemId.toString(),
+              changedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
             },
           ],
         },
         {
           applicantId: customers[2]._id.toString(),
           amount: 75000,
-          term: 48,
+          term: 36,
           purpose: LoanPurpose.HOME_IMPROVEMENT,
           purposeDescription: 'Kitchen and bathroom remodeling',
           status: LoanStatus.REJECTED,
@@ -116,12 +119,12 @@ export class LoanSeeder {
           rejectedBy: officerId,
           rejectedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
           rejectionReason: 'Insufficient credit history',
-          decisionHistory: [
+          statusHistory: [
             {
               status: LoanStatus.REJECTED,
-              decidedBy: officerId || 'system',
+              changedBy: officerId || systemId.toString(),
               reason: 'Insufficient credit history',
-              timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+              changedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
             },
           ],
         },
@@ -141,23 +144,23 @@ export class LoanSeeder {
           disbursedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
           approvedBy: officerId,
           approvedAt: new Date(Date.now() - 95 * 24 * 60 * 60 * 1000),
-          decisionHistory: [
+          statusHistory: [
             {
               status: LoanStatus.APPROVED,
-              decidedBy: officerId || 'system',
+              changedBy: officerId || systemId.toString(),
               reason: 'Approved for debt consolidation',
-              timestamp: new Date(Date.now() - 95 * 24 * 60 * 60 * 1000),
+              changedAt: new Date(Date.now() - 95 * 24 * 60 * 60 * 1000),
             },
             {
               status: LoanStatus.DISBURSED,
-              decidedBy: officerId || 'system',
-              timestamp: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+              changedBy: officerId || systemId.toString(),
+              changedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
             },
             {
               status: LoanStatus.ACTIVE,
-              decidedBy: 'system',
+              changedBy: officerId || systemId.toString(),
               reason: 'First repayment received',
-              timestamp: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+              changedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
             },
           ],
         },

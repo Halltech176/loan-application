@@ -93,7 +93,7 @@ const loanApplicationSchema = new Schema<ILoanApplication>(
       type: Number,
       required: true,
       min: 1,
-      max: 3,
+      max: 36,
     },
     debtToIncomeRatio: {
       type: Number,

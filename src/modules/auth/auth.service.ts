@@ -16,6 +16,7 @@ import { ConflictError, UnauthorizedError, NotFoundError } from '../../shared/er
 import { EventPublisher } from '../../infrastructure/events/event-publisher';
 import { Logger } from '../../infrastructure/logging/logger';
 import { Types } from 'mongoose';
+import { UserRole } from '../user/user.model';
 
 interface TokenPair {
   accessToken: string;
@@ -66,8 +67,8 @@ export class AuthService {
       phoneNumber: dto.phoneNumber,
       firstName: dto.firstName,
       lastName: dto.lastName,
-      role: 'applicant',
-      permissions: this.getPermissionsForRole('applicant'),
+      role: UserRole.CUSTOMER,
+      permissions: this.getPermissionsForRole(UserRole.CUSTOMER),
       emailVerified: false,
       phoneVerified: false,
     });
@@ -542,7 +543,7 @@ export class AuthService {
 
   private getPermissionsForRole(role: string): string[] {
     const permissionsMap: Record<string, string[]> = {
-      admin: [
+      [UserRole.ADMIN]: [
         'user:create',
         'user:read',
         'user:update',
@@ -559,7 +560,7 @@ export class AuthService {
         'payment:update',
         'report:read',
       ],
-      loan_officer: [
+      [UserRole.LOAN_OFFICER]: [
         'user:read',
         'loan:create',
         'loan:read',
@@ -569,7 +570,7 @@ export class AuthService {
         'payment:read',
         'report:read',
       ],
-      finance: [
+      [UserRole.FINANCE]: [
         'loan:read',
         'loan:disburse',
         'payment:create',
@@ -577,7 +578,7 @@ export class AuthService {
         'payment:update',
         'report:read',
       ],
-      applicant: ['loan:create', 'loan:read', 'payment:read'],
+      [UserRole.CUSTOMER]: ['loan:create', 'loan:read', 'payment:read'],
     };
 
     return permissionsMap[role] || [];
